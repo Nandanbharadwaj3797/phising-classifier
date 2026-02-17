@@ -1,1 +1,3 @@
 myenv/
+.env
+upload_data_to_db/phising.csv
