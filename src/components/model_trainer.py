@@ -67,11 +67,11 @@ class ModelTrainer:
         }
 
     def evaluate_models(self,
-                        X_train,
-                        X_test,
-                        y_train,
-                        y_test,
-                        models):
+                    X_train,
+                    y_train,
+                    X_test,
+                    y_test,
+                    models):
         try:
 
             report = {}
@@ -172,11 +172,13 @@ class ModelTrainer:
 
             logging.info(f"Extracting model config file path")
 
-            model_report: dict = self.evaluate_models(
+            model_report = self.evaluate_models(
                 X_train=x_train,
                 y_train=y_train,
                 X_test=x_test,
-                y_test=y_test, models=self.models)
+                y_test=y_test,
+                models=self.models
+            )
 
             ## To get best model score from dict
             best_model_score = max(sorted(model_report.values()))
@@ -196,38 +198,53 @@ class ModelTrainer:
                 y_train=y_train
             )
 
+            best_model_name = max(model_report, key=model_report.get)
+            best_model_score = model_report[best_model_name]
+            best_model = self.models[best_model_name]
+
+            logging.info(f"Best base model: {best_model_name}")
+
+            best_model = self.finetune_best_model(
+                best_model_object=best_model,
+                best_model_name=best_model_name,
+                X_train=x_train,
+                y_train=y_train
+            )
+
             best_model.fit(x_train, y_train)
+
             y_pred = best_model.predict(x_test)
-            best_model_score = accuracy_score(y_test, y_pred)
+            final_score = accuracy_score(y_test, y_pred)
 
-            print(f"best model name {best_model_name} and score: {best_model_score}")
+            logging.info(f"Final tuned model accuracy: {final_score}")
 
-            if best_model_score < 0.5:
-                raise Exception("No best model found with an accuracy greater than the threshold 0.6")
-
-            logging.info(f"Best found model on both training and testing dataset")
+            if final_score < self.model_trainer_config.expected_accuracy:
+                raise Exception(
+                    f"No model found with accuracy greater than "
+                    f"{self.model_trainer_config.expected_accuracy}"
+                )
 
             custom_model = VisibilityModel(
                 preprocessing_object=preprocessor,
                 trained_model_object=best_model
             )
 
-            logging.info(
-                f"Saving model at path: {self.model_trainer_config.trained_model_path}"
+            os.makedirs(
+                os.path.dirname(self.model_trainer_config.trained_model_path),
+                exist_ok=True
             )
-
-            os.makedirs(os.path.dirname(self.model_trainer_config.trained_model_path), exist_ok=True)
 
             self.utils.save_object(
                 file_path=self.model_trainer_config.trained_model_path,
                 obj=custom_model,
             )
 
-            self.utils.upload_file(from_filename=self.model_trainer_config.trained_model_path,
-                                   to_filename="model.pkl",
-                                   bucket_name=AWS_S3_BUCKET_NAME)
+            self.utils.upload_file(
+                from_filename=self.model_trainer_config.trained_model_path,
+                to_filename="model.pkl",
+                bucket_name=AWS_S3_BUCKET_NAME
+            )
 
-            return best_model_score
-
+            return final_score
         except Exception as e:
-            raise CustomException(e, sys)
+                raise CustomException(e, sys)

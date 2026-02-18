@@ -62,9 +62,9 @@ class DataValidation:
             raise CustomException(e, sys)
 
     def validate_file_name(self,
-                           file_path: str,
-                           length_of_date_stamp: int,
-                           length_of_time_stamp: int) -> bool:
+                       file_path: str,
+                       length_of_date_stamp: int,
+                       length_of_time_stamp: int) -> bool:
         """
             Method Name :   validate_file_columns
             Description :   This method validates the file name for a particular raw file 
@@ -76,19 +76,17 @@ class DataValidation:
             Revisions   :   moved setup to cloud
         """
         try:
-
             file_name = os.path.basename(file_path)
-            regex = "['phising']+['\_'']+[\d_]+[\d]+\.csv"
+
+            regex = r"phising_\d{8}_\d{6}\.csv"
 
             if re.match(regex, file_name):
-                splitAtDot = re.split('.csv', file_name)
-                splitAtDot = (re.split('_', splitAtDot[0]))
-                filename_validation_status = len(splitAtDot[1]) == length_of_date_stamp and len(
-                    splitAtDot[2]) == length_of_time_stamp
-            else:
-                filename_validation_status = False
-
-            return filename_validation_status
+                split_at_dot = file_name.replace(".csv", "").split("_")
+                return (
+                    len(split_at_dot[1]) == length_of_date_stamp and
+                    len(split_at_dot[2]) == length_of_time_stamp
+                )
+            return False
 
         except Exception as e:
             raise CustomException(e, sys)

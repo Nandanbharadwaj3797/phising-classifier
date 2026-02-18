@@ -35,16 +35,17 @@ class DataIngestion:
         Version     :   0.1
        
         """
+    
         try:
             logging.info(f"Exporting data from mongodb")
             raw_batch_files_path = self.data_ingestion_config.data_ingestion_dir
             os.makedirs(raw_batch_files_path, exist_ok=True)
 
-            income_data = PhisingData(
-                database_name=MONGO_DATABASE_NAME)
+            phising_data = PhisingData(database_name=MONGO_DATABASE_NAME)
+
 
             logging.info(f"Saving exported data into feature store file path: {raw_batch_files_path}")
-            for collection_name, dataset in income_data.export_collections_as_dataframe():
+            for collection_name, dataset in phising_data.export_collections_as_dataframe():
                 logging.info(f"Shape of {collection_name}: {dataset.shape}")
                 feature_store_file_path = os.path.join(raw_batch_files_path, collection_name + '.csv')
                 print(f"feature_store_file_path-----{feature_store_file_path}")

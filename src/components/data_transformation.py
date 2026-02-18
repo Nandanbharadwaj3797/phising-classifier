@@ -65,45 +65,56 @@ class DataTransformation:
     
 
     def initiate_data_transformation(self):
-        """
-            Method Name :   initiate_data_transformation
-            Description :   This method initiates the data transformation component for the pipeline 
-            
-            Output      :   data transformation artifact is created and returned 
-            On Failure  :   Write an exception log and then raise an exception
-            
-            Version     :   1.2
-            Revisions   :   moved setup to cloud
-        """
 
-        logging.info(
-            "Entered initiate_data_transformation method of Data_Transformation class"
-        )
+        logging.info("Starting data transformation")
 
         try:
-            dataframe = self.get_merged_batch_data(valid_data_dir=self.valid_data_dir)
+            dataframe = self.get_merged_batch_data(self.valid_data_dir)
             dataframe = self.utils.remove_unwanted_spaces(dataframe)
-            dataframe.replace('?', np.NaN, inplace=True)  # replacing '?' with NaN values for imputation
+            dataframe.replace('?', np.nan, inplace=True)
 
             X = dataframe.drop(columns=TARGET_COLUMN)
-            y = np.where(dataframe[TARGET_COLUMN] == -1, 0, 1)  # replacing the values of the target column
+            y = dataframe[TARGET_COLUMN].map({-1: 0, 1: 1})
 
-            sampler = RandomOverSampler()
-            x_sampled, y_sampled = sampler.fit_resample(X, y)
+            categorical_features, continuous_features, _ = \
+                self.utils.identify_feature_types(X)
 
-            X_train, X_test, y_train, y_test = train_test_split(x_sampled, y_sampled, test_size=0.2)
+            numeric_pipeline = Pipeline([
+                ('imputer', SimpleImputer(strategy='median')),
+                ('scaler', StandardScaler())
+            ])
 
-            preprocessor = SimpleImputer(strategy='most_frequent')
+            categorical_pipeline = Pipeline([
+                ('imputer', SimpleImputer(strategy='most_frequent')),
+                ('encoder', OneHotEncoder(handle_unknown='ignore'))
+            ])
 
-            x_train_scaled = preprocessor.fit_transform(X_train)
-            x_test_scaled = preprocessor.transform(X_test)
+            preprocessor = ColumnTransformer([
+                ('num', numeric_pipeline, continuous_features),
+                ('cat', categorical_pipeline, categorical_features)
+            ])
 
-            preprocessor_path = self.data_transformation_config.transformed_object_file_path
-            os.makedirs(os.path.dirname(preprocessor_path), exist_ok=True)
-            self.utils.save_object(file_path=preprocessor_path,
-                                   obj=preprocessor)
+            sampler = RandomOverSampler(random_state=42)
+            X_resampled, y_resampled = sampler.fit_resample(X, y)
 
-            return x_train_scaled, y_train, x_test_scaled, y_test, preprocessor_path
+            X_train, X_test, y_train, y_test = train_test_split(
+                X_resampled, y_resampled,
+                test_size=0.2,
+                random_state=42
+            )
+
+            X_train_transformed = preprocessor.fit_transform(X_train)
+            X_test_transformed = preprocessor.transform(X_test)
+
+            os.makedirs(self.data_transformation_config.data_transformation_dir, exist_ok=True)
+
+            self.utils.save_object(
+                self.data_transformation_config.transformed_object_file_path,
+                preprocessor
+            )
+
+            return X_train_transformed, y_train, X_test_transformed, y_test, \
+                self.data_transformation_config.transformed_object_file_path
 
         except Exception as e:
-            raise CustomException(e, sys) from e
+            raise CustomException(e, sys)
