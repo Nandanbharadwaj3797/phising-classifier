@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phishing Detection</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<form action="/predict" method="post" enctype="multipart/form-data">
+
+    <h1 class="title">Upload CSV for Prediction</h1>
+
+    <div class="upload-frame">
+        <div class="upload-center">
+            
+            <div class="title">
+                <h2>Drop CSV File to Upload</h2>
+            </div>
+
+            <div class="dropzone">
+                <img src="{{ url_for('static', filename='images/upload.svg') }}" class="upload-icon" />
+                
+                <input type="file" 
+                       class="upload-input" 
+                       name="file" 
+                       accept=".csv" 
+                       required>
+            </div>
+
+            <br>
+
+            <button type="submit" class="btn-primary">Predict</button>
+
+        </div>
+    </div>
+
+</form>
+
+<br>
+
+<div style="text-align:center;">
+    <a href="/">
+        <button class="btn back">Back to Home</button>
+    </a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,137 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:700,300);
+
+/* ================= UPLOAD FRAME ================= */
+
+.upload-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  height: 400px;
+  margin-top: -200px;
+  margin-left: -200px;
+  border-radius: 5px;
+  box-shadow: 4px 8px 16px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(to top right, darkmagenta 0%, hotpink 100%);
+  font-family: "Open Sans", sans-serif;
+}
+
+.upload-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 260px;
+  border-radius: 5px;
+  box-shadow: 8px 10px 15px rgba(0, 0, 0, 0.2);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.upload-title {
+  width: 100%;
+  height: 50px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+  font-size: 16px;
+  color: #555;
+}
+
+.dropzone {
+  width: 120px;
+  height: 90px;
+  border: 2px dashed #aaa;
+  border-radius: 5px;
+  text-align: center;
+  position: relative;
+}
+
+.upload-icon {
+  margin-top: 20px;
+}
+
+.upload-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ================= BUTTON STYLE ================= */
+
+.btn-primary {
+  padding: 10px 20px;
+  background: darkmagenta;
+  color: white;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 3px 0 hotpink;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  background: rebeccapurple;
+}
+
+/* ================= INDEX PAGE ================= */
+
+.index-body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f4f6f9;
+}
+
+.index-container {
+  margin-top: 100px;
+}
+
+.index-btn {
+  padding: 12px 25px;
+  margin: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  background-color: #007bff;
+  color: white;
+}
+
+.index-btn.train {
+  background-color: #28a745;
+}
+
+/* ================= TRAIN PAGE ================= */
+
+.train-body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  text-align: center;
+}
+
+.train-container {
+  margin-top: 100px;
+}
+
+.train-upload-box {
+  background: white;
+  padding: 30px;
+  width: 400px;
+  margin: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.btn-back {
+  background: #6c757d;
+  padding: 10px 20px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}

@@ -1,69 +1,64 @@
 import sys
-from typing import Optional, List
-
-from database_connect import mongo_operation as mongo
-from pymongo import MongoClient
-import numpy as np
 import pandas as pd
-from src.constant import *
-from src.configuration.mongo_db_connection import MongoDBClient
+from pymongo import MongoClient
+from typing import Generator, Tuple
+
+from src.constant import MONGODB_URI
 from src.exception import CustomException
-import os
 
 
 class PhisingData:
     """
-    This class help to export entire mongo db record as pandas dataframe
+    This class exports MongoDB collections as pandas DataFrames.
     """
 
-    def __init__(self,
-                 database_name: str):
-        """
-        """
+    def __init__(self, database_name: str):
         try:
+            if not MONGODB_URI:
+                raise ValueError("MONGODB_URI is not set in environment variables")
 
             self.database_name = database_name
-            self.mongo_url = os.getenv("MONGO_DB_URL")
+            self.client = MongoClient(MONGODB_URI)
+            self.db = self.client[self.database_name]
 
         except Exception as e:
             raise CustomException(e, sys)
 
-    def get_collection_names(self) -> List:
-
-        mongo_db_client = MongoClient(self.mongo_url)
-        collection_names = mongo_db_client[self.database_name].list_collection_names()
-        return collection_names
-
-    def get_collection_data(self,
-                            collection_name: str) -> pd.DataFrame:
-
-        mongo_connection = mongo(
-            client_url=self.mongo_url,
-            database_name=self.database_name,
-            collection_name=collection_name
-        )
-        df = mongo_connection.find()
-
-        if "_id" in df.columns.to_list():
-            df = df.drop(columns=["_id"])
-        df = df.replace({"na": np.nan})
-        return df
-
     def export_collections_as_dataframe(
-            self) -> pd.DataFrame:
-        try:
-            """
-            export entire collectin as dataframe:
-            return dd.DataFrame of collection
-            """
+        self
+    ) -> Generator[Tuple[str, pd.DataFrame], None, None]:
+        """
+        Exports each collection in the database as a pandas DataFrame.
 
-            collections = self.get_collection_names()
+        Yields:
+            (collection_name, dataframe)
+        """
+        try:
+            collections = self.db.list_collection_names()
+
+            print("Collections found:", collections)
+
+            if not collections:
+                print("⚠ No collections found in database.")
+                return
 
             for collection_name in collections:
-                df = self.get_collection_data(collection_name=collection_name)
-                yield collection_name, df
+                collection = self.db[collection_name]
+                data = list(collection.find())
 
+                print(f"Collection: {collection_name}")
+                print(f"Document count: {len(data)}")
 
+                if len(data) > 0:
+                    df = pd.DataFrame(data)
+
+                    # Drop MongoDB internal ID
+                    if "_id" in df.columns:
+                        df.drop(columns=["_id"], inplace=True)
+
+                    yield collection_name, df
+                else:
+                    print(f"⚠ Collection '{collection_name}' is empty.")
 
         except Exception as e:
             raise CustomException(e, sys)

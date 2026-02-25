@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Train Phishing Classifier</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <style>
+      .loader {
+        display: none;
+        margin-top: 15px;
+        font-weight: bold;
+        color: #007bff;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Train Phishing Classifier</h1>
+
+      <form id="trainForm" action="/train" method="post" enctype="multipart/form-data">
+        <div class="upload-box">
+          <h2>Upload CSV File for Training</h2>
+
+          <input type="file" name="file" id="file" accept=".csv" required />
+
+          <br /><br />
+
+          <button type="submit" class="btn-primary" id="trainBtn">
+            Train Model
+          </button>
+
+          <div class="loader" id="loader">
+            🚀 Training in progress... Please wait (This may take several minutes)
+          </div>
+        </div>
+      </form>
+
+      <br />
+      <a href="/">
+        <button class="btn back">Back to Home</button>
+      </a>
+    </div>
+
+    <script>
+      const form = document.getElementById("trainForm");
+      const button = document.getElementById("trainBtn");
+      const loader = document.getElementById("loader");
+
+      form.addEventListener("submit", function () {
+        button.disabled = true;
+        button.innerText = "Training...";
+        loader.style.display = "block";
+      });
+    </script>
+  </body>
+</html>

@@ -1,8 +1,13 @@
 from datetime import datetime
 import os
+from dotenv import load_dotenv
 
-AWS_S3_BUCKET_NAME = "sensorpw"
-MONGO_DATABASE_NAME = "PhisingClassifier"
+load_dotenv()
+
+AWS_S3_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
+
+MONGO_DATABASE_NAME = os.getenv("DATABASE_NAME")
+MONGODB_URI = os.getenv("MONGODB_URI")
 
 TARGET_COLUMN = "Result"
 

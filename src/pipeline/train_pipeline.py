@@ -1,6 +1,8 @@
 import pathlib
 import sys
 import numpy as np
+import os
+
 from src.components.data_ingenstion import DataIngestion
 from src.components.data_validation import DataValidation
 from src.components.data_transformation import DataTransformation
@@ -13,60 +15,95 @@ class TrainingPipeline:
 
     def start_data_ingestion(self):
         try:
-            logging.info("Starting Data Ingestion")
+            logging.info("========== DATA INGESTION STARTED ==========")
             data_ingestion = DataIngestion()
-            return data_ingestion.initiate_data_ingestion()
+            raw_data_dir = data_ingestion.initiate_data_ingestion()
+            logging.info("========== DATA INGESTION COMPLETED ==========")
+            return raw_data_dir
+
         except Exception as e:
             raise CustomException(e, sys)
 
     def start_data_validation(self, raw_data_dir):
         try:
-            logging.info("Starting Data Validation")
+            logging.info("========== DATA VALIDATION STARTED ==========")
             data_validation = DataValidation(raw_data_store_dir=raw_data_dir)
-            return data_validation.initiate_data_validation()
+            valid_data_dir = data_validation.initiate_data_validation()
+            logging.info("========== DATA VALIDATION COMPLETED ==========")
+            return valid_data_dir
+
         except Exception as e:
             raise CustomException(e, sys)
 
     def start_data_transformation(self, valid_data_dir):
         try:
-            logging.info("Starting Data Transformation")
+            logging.info("========== DATA TRANSFORMATION STARTED ==========")
             data_transformation = DataTransformation(valid_data_dir=valid_data_dir)
-            return data_transformation.initiate_data_transformation()
+
+            x_train, y_train, x_test, y_test, preprocessor_path = \
+                data_transformation.initiate_data_transformation()
+
+            logging.info("========== DATA TRANSFORMATION COMPLETED ==========")
+
+            return x_train, y_train, x_test, y_test, preprocessor_path
+
         except Exception as e:
             raise CustomException(e, sys)
 
-    def start_model_training(self,
-                             x_train: np.array,
-                             y_train: np.array,
-                             x_test: np.array,
-                             y_test: np.array,
-                             preprocessor_path: pathlib.Path):
+    def start_model_training(
+        self,
+        x_train: np.array,
+        y_train: np.array,
+        x_test: np.array,
+        y_test: np.array,
+        preprocessor_path: pathlib.Path
+    ):
         try:
-            logging.info("Starting Model Training")
+            logging.info("========== MODEL TRAINING STARTED ==========")
+
             model_trainer = ModelTrainer()
-            return model_trainer.initiate_model_trainer(
+
+            model_accuracy = model_trainer.initiate_model_trainer(
                 x_train,
                 y_train,
                 x_test,
                 y_test,
                 preprocessor_path
             )
+
+            logging.info("========== MODEL TRAINING COMPLETED ==========")
+
+            return model_accuracy
+
         except Exception as e:
             raise CustomException(e, sys)
 
     def run_pipeline(self):
         try:
+            logging.info("========== FULL TRAINING PIPELINE STARTED ==========")
+
             raw_data_dir = self.start_data_ingestion()
+
             valid_data_dir = self.start_data_validation(raw_data_dir)
+
             x_train, y_train, x_test, y_test, preprocessor_path = \
                 self.start_data_transformation(valid_data_dir)
 
             model_accuracy = self.start_model_training(
-                x_train, y_train, x_test, y_test, preprocessor_path
+                x_train,
+                y_train,
+                x_test,
+                y_test,
+                preprocessor_path
             )
 
             logging.info(f"Training completed successfully. Accuracy: {model_accuracy}")
             print("Training completed. Model accuracy:", model_accuracy)
 
+            logging.info("========== FULL TRAINING PIPELINE COMPLETED ==========")
+
+            return model_accuracy
+
         except Exception as e:
             raise CustomException(e, sys)
+
