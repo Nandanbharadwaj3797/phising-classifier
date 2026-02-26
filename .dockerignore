@@ -1,0 +1,10 @@
+myenv/
+__pycache__/
+*.pyc
+logs/
+artifacts/
+prediction_artifacts/
+notebook/
+src.egg-info/
+.env
+.git
